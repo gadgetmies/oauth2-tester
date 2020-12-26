@@ -1,12 +1,6 @@
 import { CookieJar } from 'tough-cookie'
 import { AxiosResponse } from 'axios'
 
-/**
- * @property clientId - OAuth client ID
- * @property clientSecret - OAuth client secret
- * @property redirectUri - OAuth redirect URI
- * @property clientName - Human readable name for the client
- */
 export type Client = {
   clientId: string
   clientSecret: string
@@ -41,11 +35,12 @@ export type AccountGeneratorFn = () => Promise<UserAccount>
 export type RegisterAccountFn = (user: UserAccount) => Promise<void>
 export type RemoveAccountFn = (username: string) => Promise<void>
 export type ConsentFn = (
+  shouldConsent: boolean,
   consentPage: AxiosResponse,
   user: UserAccount,
   jar: CookieJar,
   requestedScopes: string[]
-) => Promise<URL>
+) => Promise<AxiosResponse>
 export type LoginFn = (loginPage: AxiosResponse, user: UserAccount, jar: CookieJar) => AxiosResponse
 
 export type UserAccount = {
@@ -53,31 +48,17 @@ export type UserAccount = {
   password: string
 }
 
-/**
- * Properties of the OAuth server
- * @property authorizationEndpoint - URL of the authorization endpoint
- * @property tokenEndpoint - URL of the token endpoint
- */
 export type OAuthProperties = {
   authorizationEndpoint: () => string
   tokenEndpoint: () => string
   availableScopes: () => string[]
 }
 
-/**
- * @property authorizationCode - OAuth authorization code value
- * @property scopes - OAuth scopes
- */
 export type AuthorizationCodeDetails = {
   authorizationCode: string
   scopes: string[]
 }
 
-/**
- * @property accessToken - OAuth access token
- * @property [scopes] - OAuth scopes
- * @property [expiresIn] - Access token expiry time
- */
 export type AccessTokenDetails = {
   accessToken: string
   scopes?: string[]
@@ -85,22 +66,14 @@ export type AccessTokenDetails = {
   tokenType: string
 }
 
-/**
- * @property refreshToken - OAuth refresh token
- * @property [scopes] - OAuth scopes
- */
 export type RefreshTokenDetails = {
   refreshToken: string
   scopes?: string[]
 }
 
-/**
- * @property accessToken - Returned access token details
- * @property [refreshToken] - Returned refresh token details
- */
 export type AccessTokenResponse = {
-  accessToken: AccessTokenDetails
-  refreshToken?: RefreshTokenDetails
+  accessTokenDetails: AccessTokenDetails
+  refreshTokenDetails?: RefreshTokenDetails
 }
 
 export type CaseFn = (description: string, callback: (...args: any[]) => Promise<void>) => void
@@ -118,16 +91,10 @@ export type TestFunctions = {
   fail: FailFn<any>
 }
 
-/**
- * @property run - Run all phases of the test i.e. authorization code, access token and refresh token requests. Returns null if successful and an error object if not.
- * @property getchAuthorizationCode - Test authorization code fetching
- * @property fetchAccessToken - Test access token fetching
- * @property fetchRefreshToken - Test refresh token fetching
- */
-export type AuthorizationCodeGrantTester = {
-  register: (testFunctions: TestFunctions) => void
-  fetchAuthorizationCode: () => Promise<AuthorizationCodeDetails>
-  fetchAccessToken: (details: AccessTokenDetails) => Promise<AccessTokenResponse>
-  fetchRefreshToken: (details: RefreshTokenDetails) => Promise<AccessTokenResponse>
-  cleanup: () => Promise<void>
+export type AuthorizationCodeRequestOptions = {
+  shouldConsent?: boolean
+  scopes?: string[]
+  extraParams?: {
+    [k: string]: string
+  }
 }
