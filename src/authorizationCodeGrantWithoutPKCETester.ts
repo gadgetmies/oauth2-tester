@@ -96,7 +96,6 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
             registerSetupAndTearDown()
 
             it('should fail', () =>
-              // TODO: add ability to provide valid authorizationCodes
               expectToBeUnauthorized(expectedAuthenticateDetails, () =>
                 this.fetchAccessToken(
                   {
@@ -112,7 +111,6 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
             registerSetupAndTearDown()
 
             it('should fail', () =>
-              // TODO: add ability to provide valid authorizationCodes
               expectToBeUnauthorized(expectedAuthenticateDetails, () =>
                 this.fetchAccessToken(
                   {

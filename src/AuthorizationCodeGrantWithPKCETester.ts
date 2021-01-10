@@ -108,7 +108,6 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
           registerSetupAndTearDown()
 
           it('should fail', () =>
-            // TODO: add ability to provide valid authorizationCodes
             expectToFailWithStatus(401, () =>
               this.fetchAccessToken({ ...client, redirectUri: 'http://localhost:5001' }, authorizationCodeDetails)
             ))
@@ -118,7 +117,6 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
           registerSetupAndTearDown()
 
           it('should fail', () =>
-            // TODO: add ability to provide valid authorizationCodes
             expectToFailWithStatus(401, () =>
               this.fetchAccessToken(
                 {

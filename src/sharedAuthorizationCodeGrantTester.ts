@@ -210,9 +210,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           await this.removeClient(clientName)
         })
 
-        // TODO: revoke access codes granted for the authorization code
         it('fails if authorization code is reused', () => {
-          // TODO: how should this work for PKCE where the authorization code and code verifier cannot be found from the db even if they are sent
           return expectErrorRedirectToIncludeQuery(redirectUri, { error: 'invalid_grant' }, () =>
             this.fetchAccessToken(client, authorizationCodeDetails)
           )
@@ -279,7 +277,6 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           client = await this.clientGenerator(clientName, redirectUri, this.oauthProperties.availableScopes())
         })
 
-        // TODO: share this between classes to remove duplication
         const registerUserSetupAndTeardown = () => {
           before('Register user', async () => {
             user = await this.accountGenerator()
@@ -315,7 +312,6 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           })
         })
 
-        // TODO: why is this different from the one in PKCE test?
         describe('when user does not consent', () => {
           registerUserSetupAndTeardown()
           it('should fail', async () => {
@@ -329,29 +325,6 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
         })
       })
     })
-
-    /* TODO: cases
-     * Verify token type?
-     * Incorrect token type request?
-     * Different scopes for authorization code, access token and refresh token requests
-     * New refresh token scope is identical to the revoked
-     * State parameter (also on errors)
-     * No redirect uri in authorization request
-     * No scope in authorization code, access token and refresh token requests
-     * Check expiresIn
-     * Embedded browser / frame (possible to test? requires a web server?)
-     * CSRF against redirect-uri?
-     * DoS attack that exhaust resources
-     * PKCE
-     * * Access token response does not contain refresh token
-     * Validate request_uri in access token request iff it was provided in the authorization token request (redirect_uri is optional in authorize)
-     * Ensure endpoint query is retained
-     * Endpoint uri MUST NOT include a fragment component (redirect)
-     * Redirection uri must be an absolute URI
-     * Redirect uri trailing slash after origin
-     * Invalid redirect_uri in authorization request results in an invalid_request instead of unauthorized_client error
-     * Assert 40x error body
-     */
   }
 
   async requestAuthorizationCode(
@@ -373,7 +346,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
         client_id: client.clientId,
         redirect_uri: client.redirectUri,
         scope: options.scopes ? options.scopes.join(' ') : undefined,
-        response_type: 'code', // TODO: add state?
+        response_type: 'code',
         ...options.extraParams,
       },
     })
@@ -389,7 +362,6 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
 
     const consentPageResponse = await this.followRedirect(loginRedirectResponse, jar)
 
-    // TODO: assert scopes
     return await this.consent(options.shouldConsent, consentPageResponse, user, jar, options.scopes)
   }
 
