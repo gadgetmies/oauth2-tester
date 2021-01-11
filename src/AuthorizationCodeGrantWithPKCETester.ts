@@ -17,7 +17,10 @@ import {
 import base64url from 'base64url'
 import * as uuid from 'uuid'
 import * as crypto from 'crypto'
-import { SharedAuthorizationCodeGrantTester } from './sharedAuthorizationCodeGrantTester'
+import {
+  SharedAuthorizationCodeGrantTester,
+  SharedAuthorizationCodeGrantTesterOptions,
+} from './sharedAuthorizationCodeGrantTester'
 import * as querystring from 'querystring'
 import { TestHelpers } from './testHelpers'
 
@@ -43,13 +46,14 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
       consent: ConsentFn
       accountGenerator: AccountGeneratorFn
     },
+    options: SharedAuthorizationCodeGrantTesterOptions,
     pkce: {
       codeChallengeMethod: 'S256' | 'plain'
     } = {
       codeChallengeMethod: 'plain',
     }
   ) {
-    super(oauthProperties, client, user)
+    super(oauthProperties, client, user, options)
     this.codeChallengeMethod = pkce.codeChallengeMethod
   }
 
@@ -240,7 +244,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
         accessToken: res.data.access_token,
         expiresIn: res.data.expires_in,
         tokenType: res.data.token_type,
-      }
+      },
     }
   }
 

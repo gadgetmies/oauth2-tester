@@ -1,4 +1,7 @@
-import { SharedAuthorizationCodeGrantTester } from './sharedAuthorizationCodeGrantTester'
+import {
+  SharedAuthorizationCodeGrantTester,
+  SharedAuthorizationCodeGrantTesterOptions,
+} from './sharedAuthorizationCodeGrantTester'
 import {
   AccessTokenResponse,
   AccountGeneratorFn,
@@ -38,9 +41,10 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
       login: LoginFn
       consent: ConsentFn
       accountGenerator: AccountGeneratorFn
-    }
+    },
+    options: SharedAuthorizationCodeGrantTesterOptions
   ) {
-    super(oauthProperties, client, user)
+    super(oauthProperties, client, user, options)
   }
 
   register(testFunctions) {

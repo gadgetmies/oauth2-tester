@@ -24,6 +24,8 @@ import * as R from 'ramda'
 
 axiosCookiejarSupport(axios)
 
+export type SharedAuthorizationCodeGrantTesterOptions = { useRefreshTokens: boolean }
+
 export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
   // Needed for authorization code and resource owner password grants
   protected registerAccount: RegisterAccountFn
@@ -34,6 +36,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
   protected consent: ConsentFn
   protected removeAccount: RemoveAccountFn
   protected cookieJars: { [x: string]: toughCookie.CookieJar } = {}
+  private options: SharedAuthorizationCodeGrantTesterOptions
 
   protected constructor(
     oauthProperties: OAuthProperties,
@@ -47,7 +50,8 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
       login: LoginFn
       consent: ConsentFn
       accountGenerator: AccountGeneratorFn
-    }
+    },
+    options: SharedAuthorizationCodeGrantTesterOptions
   ) {
     super(oauthProperties, client)
     this.registerAccount = user.registerAccount
@@ -55,6 +59,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     this.login = user.login
     this.consent = user.consent
     this.accountGenerator = user.accountGenerator
+    this.options = options
   }
 
   registerSharedTests(testFunctions: TestFunctions) {
@@ -121,6 +126,13 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
             const accessTokenDetails = accessTokenResponse.accessTokenDetails
             if (!accessTokenDetails.accessToken) {
               fail('Access token was not returned or was empty')
+            }
+
+            if (
+              this.options.useRefreshTokens &&
+              (!accessTokenResponse.refreshTokenDetails || !accessTokenResponse.refreshTokenDetails.refreshToken)
+            ) {
+              fail('Refresh token was not returned or was empty')
             }
 
             verifyScopes(accessTokenDetails.scopes, availableScopes)
