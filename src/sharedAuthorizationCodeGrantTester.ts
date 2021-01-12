@@ -349,18 +349,23 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     options.shouldConsent = options.shouldConsent === undefined ? true : options.shouldConsent
     const jar = this.cookieJars[user.username]
 
+    const params = {
+      client_id: client.clientId,
+      redirect_uri: client.redirectUri,
+      scope: options.scopes ? options.scopes.join(' ') : undefined,
+      response_type: 'code',
+      ...options.extraParams,
+    }
+
+    // tslint:disable-next-line:no-console
+    console.log(`Requesting authorization code with params:\n ${JSON.stringify(params, null, 2)}`)
+
     const res = await axios({
       jar,
+      params,
       url: this.oauthProperties.authorizationEndpoint(),
       method: 'GET',
       withCredentials: true,
-      params: {
-        client_id: client.clientId,
-        redirect_uri: client.redirectUri,
-        scope: options.scopes ? options.scopes.join(' ') : undefined,
-        response_type: 'code',
-        ...options.extraParams,
-      },
     })
 
     const loginResponse = await this.login(res, user, jar)

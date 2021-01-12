@@ -61,7 +61,66 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
     describe('Authorization Code Grant with PKCE', () => {
       super.registerSharedTests(testFunctions)
       const helpers = new TestHelpers(testFunctions.fail)
+
+      this.registerFailingAuthorizationCodeTests(testFunctions, helpers)
       this.registerFailingAccessTokenTests(testFunctions, helpers)
+    })
+  }
+
+  registerFailingAuthorizationCodeTests(
+    { describe, it, before, after, fail }: TestFunctions,
+    { expectRedirectToIncludeQuery }: TestHelpers
+  ) {
+    describe('when requesting authorization code', () => {
+      let user: UserAccount
+      const redirectUri = 'https://an-awesome-service.com/'
+      const clientName = uuid.v4()
+      let client
+
+      before('Generate OAuth client', async () => {
+        client = await this.clientGenerator(clientName, redirectUri, this.oauthProperties.availableScopes())
+      })
+
+      const registerSetupAndTearDown = () => {
+        before('Register user', async () => {
+          user = await this.accountGenerator()
+          await this.registerAccount(user)
+          this.cookieJars[user.username] = new toughCookie.CookieJar()
+        })
+
+        after('Remove user', async () => {
+          await this.removeAccount(user.username)
+        })
+      }
+
+      describe('with invalid code challenge method', () => {
+        registerSetupAndTearDown()
+        it('should fail', async () => {
+          await expectRedirectToIncludeQuery(redirectUri, { error: 'invalid_request' }, () =>
+            this.requestAuthorizationCode(client, user, {
+              scopes: this.oauthProperties.availableScopes(),
+              extraParams: {
+                codeChallengeMethod: 'invalid-method',
+              },
+            })
+          )
+        })
+      })
+
+      describe('should fail with missing code challenge method', () => {
+        registerSetupAndTearDown()
+
+        it('should fail', async () => {
+          await expectRedirectToIncludeQuery(redirectUri, { error: 'invalid_request' }, () =>
+            this.requestAuthorizationCode(client, user, {
+              scopes: this.oauthProperties.availableScopes(),
+              extraParams: {
+                codeChallengeMethod: undefined,
+              },
+            })
+          )
+        })
+      })
     })
   }
 
@@ -73,6 +132,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
       let authorizationCodeDetails: AuthorizationCodeDetails
       let user: UserAccount
       const redirectUri = 'https://an-awesome-service.com/'
+      const codeVerifier = uuid.v4()
       const clientName = uuid.v4()
       let client
 
@@ -86,6 +146,9 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
         before('fetch authorization code', async () => {
           authorizationCodeDetails = await this.fetchAuthorizationCode(client, user, {
             scopes: this.oauthProperties.availableScopes(),
+            extraParams: {
+              codeVerifier,
+            },
           })
         })
 
@@ -104,7 +167,11 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
 
           it('should fail', () =>
             expectToFailWithStatus(401, () =>
-              this.fetchAccessToken({ ...client, clientId: 'invalid-client-id' }, authorizationCodeDetails)
+              this.fetchAccessTokenWithCodeVerifier(
+                { ...client, clientId: 'invalid-client-id' },
+                authorizationCodeDetails,
+                codeVerifier
+              )
             ))
         })
 
@@ -113,7 +180,11 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
 
           it('should fail', () =>
             expectToFailWithStatus(401, () =>
-              this.fetchAccessToken({ ...client, redirectUri: 'http://localhost:5001' }, authorizationCodeDetails)
+              this.fetchAccessTokenWithCodeVerifier(
+                { ...client, redirectUri: 'http://localhost:5001' },
+                authorizationCodeDetails,
+                codeVerifier
+              )
             ))
         })
 
@@ -122,12 +193,13 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
 
           it('should fail', () =>
             expectToFailWithStatus(401, () =>
-              this.fetchAccessToken(
+              this.fetchAccessTokenWithCodeVerifier(
                 {
                   ...client,
                   redirectUri: 'http://some-incorrect-uri.com',
                 },
-                authorizationCodeDetails
+                authorizationCodeDetails,
+                codeVerifier
               )
             ))
         })
@@ -137,9 +209,8 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
         describe('with incorrect code verifier', () => {
           registerSetupAndTearDown()
           it('should fail', async () => {
-            this.codeVerifierForAuthorizationCode[authorizationCodeDetails.authorizationCode] = 'incorrect-verifier'
             await expectErrorRedirectToIncludeQuery(redirectUri, { error: 'invalid_grant' }, () =>
-              this.fetchAccessToken(client, authorizationCodeDetails)
+              this.fetchAccessTokenWithCodeVerifier(client, authorizationCodeDetails, 'invalid-code-verifier')
             )
           })
         })
@@ -161,37 +232,25 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
     options: AuthorizationCodeRequestOptions = {}
   ): Promise<AxiosResponse> {
     const extraParams = options.extraParams || {}
-    const codeVerifier = extraParams.codeVerifier || uuid.v4()
+    const codeVerifier = extraParams.hasOwnProperty('codeVerifier') ? extraParams.codeVerifier : uuid.v4()
+    delete extraParams.codeVerifier
+    const codeChallengeMethod = extraParams.hasOwnProperty('codeChallengeMethod')
+      ? extraParams.codeChallengeMethod
+      : this.codeChallengeMethod
+    delete extraParams.codeChallengeMethod
     const authorizationCodeResponse = await super.requestAuthorizationCode(client, user, {
       ...options,
       shouldConsent: options.shouldConsent === undefined ? true : options.shouldConsent,
       extraParams: {
         ...extraParams,
         code_challenge: this.generateCodeChallenge(codeVerifier),
-        code_challenge_method: this.codeChallengeMethod,
+        code_challenge_method: codeChallengeMethod,
       },
     })
 
     this.storeVerifierFromResponse(authorizationCodeResponse, codeVerifier)
 
     return authorizationCodeResponse
-  }
-
-  async requestAuthorizationCodeWithCodeVerifier(
-    client: Client,
-    user: UserAccount,
-    codeVerifier,
-    options: AuthorizationCodeRequestOptions = {}
-  ) {
-    const extraParams = options.extraParams || {}
-    return this.requestAuthorizationCode(client, user, {
-      ...options,
-      shouldConsent: options.shouldConsent === undefined ? true : options.shouldConsent,
-      extraParams: {
-        ...extraParams,
-        codeVerifier,
-      },
-    })
   }
 
   generateCodeChallenge(codeVerifier: string): string {

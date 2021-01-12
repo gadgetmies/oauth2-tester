@@ -116,7 +116,11 @@ export class TestHelpers {
       this.withErrorResponse(this.withQuery(query))
     )
 
-  expectRedirectToIncludeQuery = (redirectUrl: string, query: { [k: string]: string }, callback: () => Promise<any>) =>
+  expectRedirectToIncludeQuery = (
+    redirectUrl: string,
+    query: { [k: string]: string },
+    callback: () => Promise<AxiosResponse>
+  ) =>
     this.expectToSucceed(
       callback,
       this.withResponse(this.withStatus(302)),
