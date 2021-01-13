@@ -107,7 +107,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
         })
       })
 
-      describe('should fail with missing code challenge method', () => {
+      describe('with missing code challenge method', () => {
         registerSetupAndTearDown()
 
         it('should fail', async () => {
