@@ -214,14 +214,6 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
             )
           })
         })
-
-        describe('without code verifier', () => {
-          registerSetupAndTearDown()
-          it('should fail', async () => {
-            delete this.codeVerifierForAuthorizationCode[authorizationCodeDetails.authorizationCode]
-            await expectToFailWithStatus(401, () => this.fetchAccessToken(client, authorizationCodeDetails))
-          })
-        })
       })
     })
   }
