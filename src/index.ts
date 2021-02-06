@@ -1,3 +1,3 @@
-export * from './authorizationCodeGrantWithoutPKCETester'
-export * from './authorizationCodeGrantWithPKCETester'
+export * from './AuthorizationCodeGrantWithoutPKCETester'
+export * from './AuthorizationCodeGrantWithPKCETester'
 // export * from './types'

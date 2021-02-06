@@ -1,7 +1,7 @@
 import {
   SharedAuthorizationCodeGrantTester,
   SharedAuthorizationCodeGrantTesterOptions,
-} from './sharedAuthorizationCodeGrantTester'
+} from './SharedAuthorizationCodeGrantTester'
 import {
   AccessTokenResponse,
   AccountGeneratorFn,

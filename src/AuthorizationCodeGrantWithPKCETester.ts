@@ -20,7 +20,7 @@ import * as crypto from 'crypto'
 import {
   SharedAuthorizationCodeGrantTester,
   SharedAuthorizationCodeGrantTesterOptions,
-} from './sharedAuthorizationCodeGrantTester'
+} from './SharedAuthorizationCodeGrantTester'
 import * as querystring from 'querystring'
 import { TestHelpers } from './testHelpers'
 
