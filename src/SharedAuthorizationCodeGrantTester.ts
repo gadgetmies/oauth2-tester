@@ -64,7 +64,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
 
   registerSharedTests(testFunctions: TestFunctions) {
     const { describe, it, step, before, after, fail } = testFunctions
-    const { expectErrorRedirectToIncludeQuery, expectRedirectToIncludeQuery, expectToFailWithStatus } = new TestHelpers(
+    const { expextToFailWithStatusAndDataIncluding, expectRedirectToIncludeQuery, expectToFailWithStatus } = new TestHelpers(
       fail
     )
 
@@ -223,7 +223,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
         })
 
         it('fails if authorization code is reused', () => {
-          return expectErrorRedirectToIncludeQuery(redirectUri, { error: 'invalid_grant' }, () =>
+          return expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_grant' }, () =>
             this.fetchAccessToken(client, authorizationCodeDetails)
           )
         })

@@ -52,7 +52,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
       super.registerSharedTests(testFunctions)
 
       const helpers = new TestHelpers(testFunctions.fail)
-      const { expectToBeUnauthorized, expectErrorRedirectToIncludeQuery, expectToFailWithStatus } = helpers
+      const { expectToBeUnauthorized, expextToFailWithStatusAndDataIncluding } = helpers
       const { before, after, describe, it, fail } = testFunctions
 
       let authorizationCodeDetails: AuthorizationCodeDetails
@@ -130,8 +130,8 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
         describe('with incorrect request details', () => {
           registerSetupAndTearDown()
 
-          it('fails with incorrect code', () =>
-            expectErrorRedirectToIncludeQuery(redirectUri, { error: 'invalid_grant' }, () =>
+          it('fails with incorrect code', async () =>
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_grant' }, () =>
               this.fetchAccessToken(client, { ...authorizationCodeDetails, authorizationCode: 'invalid-code' })
             ))
         })
@@ -193,7 +193,9 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
           it('should fail', async () => {
             await this.refreshAccessToken(client, refreshTokenDetails)
 
-            await expectToFailWithStatus(400, () => this.refreshAccessToken(client, refreshTokenDetails))
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_grant' }, () =>
+              this.refreshAccessToken(client, refreshTokenDetails)
+            )
           })
         })
       })
@@ -224,6 +226,14 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
         password: client.clientSecret,
       },
     })
+
+    if (res.status === 302) {
+      throw new Error('Access token responded with a redirect!')
+    }
+
+    if (res.headers.hasOwnProperty('set-cookie')) {
+      throw new Error('Access token response should not contain a set-cookie header!')
+    }
 
     const scopes = res.data.scope !== undefined ? res.data.scope.split(' ') : undefined
 

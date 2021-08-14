@@ -126,7 +126,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
 
   registerFailingAccessTokenTests(
     { describe, it, before, after, fail }: TestFunctions,
-    { expectToFailWithStatus, expectErrorRedirectToIncludeQuery }: TestHelpers
+    { expectToFailWithStatus, expextToFailWithStatusAndDataIncluding }: TestHelpers
   ) {
     describe('when fetching access token', () => {
       let authorizationCodeDetails: AuthorizationCodeDetails
@@ -209,7 +209,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
         describe('with incorrect code verifier', () => {
           registerSetupAndTearDown()
           it('should fail', async () => {
-            await expectErrorRedirectToIncludeQuery(redirectUri, { error: 'invalid_grant' }, () =>
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_grant' }, () =>
               this.fetchAccessTokenWithCodeVerifier(client, authorizationCodeDetails, 'invalid-code-verifier')
             )
           })
@@ -286,6 +286,14 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
       url: this.oauthProperties.tokenEndpoint(),
       maxRedirects: 0,
     })
+
+    if (res.status === 302) {
+      throw new Error('Server redirected an access token request!')
+    }
+
+    if (res.headers.hasOwnProperty('set-cookie')) {
+      throw new Error('Access token response should not contain a set-cookie header!')
+    }
 
     const scopes = res.data.scope !== undefined ? res.data.scope.split(' ') : undefined
 

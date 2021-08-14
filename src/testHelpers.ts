@@ -60,6 +60,19 @@ export class TestHelpers {
     }
   }
 
+  withDataIncluding = (data: { [k: string]: string }) => async (res: AxiosResponse) => {
+    const keys = Object.keys(data)
+    for (const key in keys) {
+      if (data[key] !== res.data[key]) {
+        this.fail(
+          res.data,
+          data,
+          `Wrong data: '${JSON.stringify(res.data)}'. Expected to include: ${JSON.stringify(data, null, 2)}`
+        )
+      }
+    }
+  }
+
   withQuery = (query: { [k: string]: string }) => async (res: AxiosResponse) => {
     const url = new URL(res.headers.location)
     Object.entries(query).forEach(([key, value]) => {
@@ -165,6 +178,23 @@ export class TestHelpers {
 
   expectToFailWithStatus = async (status: number, callback: () => Promise<any>): Promise<void> =>
     this.expectToFail(callback, this.withErrorResponse(this.withStatus(status)))
+
+  expectToFailWithStatusAndResponse = async (
+    status: number,
+    responseAssertion: (r: AxiosResponse) => Promise<void>,
+    callback: () => Promise<any>
+  ) =>
+    this.expectToFail(
+      callback,
+      this.withErrorResponse(this.withStatus(status)),
+      this.withErrorResponse(responseAssertion)
+    )
+
+  expextToFailWithStatusAndDataIncluding = async (
+    status: number,
+    data: { [k: string]: string },
+    callback: () => Promise<any>
+  ) => this.expectToFailWithStatusAndResponse(status, this.withDataIncluding(data), callback)
 
   expectToFailWithAnyStatus = async (statuses: number[], callback: () => Promise<any>): Promise<void> =>
     this.expectToFail(
