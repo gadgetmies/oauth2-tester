@@ -23,7 +23,7 @@ import axios, { AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios'
 import * as toughCookie from 'tough-cookie'
 import axiosCookiejarSupport from 'axios-cookiejar-support'
 import * as R from 'ramda'
-import debug from "debug";
+import debug from 'debug'
 
 const debugLog = debug('oauth2-tester')
 
@@ -334,7 +334,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           it('fails if redirect_uri is not provided', async () => {
             await expextToFailWithStatusAndDataIncluding(400, { error: '' }, () =>
               this.requestAuthorizationCode({ ...client, redirectUri: undefined }, user, {
-                scopes: availableScopes
+                scopes: availableScopes,
               })
             )
           })
@@ -342,7 +342,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           it('fails if client_id is not provided', async () => {
             await expextToFailWithStatusAndDataIncluding(400, { error: '' }, () =>
               this.requestAuthorizationCode({ ...client, clientId: undefined }, user, {
-                scopes: availableScopes
+                scopes: availableScopes,
               })
             )
           })
