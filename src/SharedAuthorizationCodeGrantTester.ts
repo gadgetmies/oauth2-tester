@@ -474,6 +474,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     const consentResponse = await this.consent(options.shouldConsent, consentPageResponse, user, jar, options.scopes)
     this.responseLog('Consent response:', consentResponse.data)
 
+    this.logout(user)
     return consentResponse
   }
 
