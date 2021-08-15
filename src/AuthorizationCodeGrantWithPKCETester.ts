@@ -1,4 +1,5 @@
 import {
+  AccessTokenRequestOptions,
   AccessTokenResponse,
   AccountGeneratorFn,
   AuthorizationCodeDetails,
@@ -258,16 +259,20 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
 
   async fetchAccessToken(
     client: Client,
-    authorizationCodeDetails: AuthorizationCodeDetails
+    authorizationCodeDetails: AuthorizationCodeDetails,
+    options?: AccessTokenRequestOptions
   ): Promise<AccessTokenResponse> {
     const codeVerifier = this.getCodeVerifier(authorizationCodeDetails.authorizationCode)
-    return this.fetchAccessTokenWithCodeVerifier(client, authorizationCodeDetails, codeVerifier)
+    return this.fetchAccessTokenWithCodeVerifier(client, authorizationCodeDetails, codeVerifier, options)
   }
 
   async fetchAccessTokenWithCodeVerifier(
     client: Client,
     authorizationCodeDetails: AuthorizationCodeDetails,
-    codeVerifier: string
+    codeVerifier: string,
+    options: AccessTokenRequestOptions = {
+      extraParams: {},
+    }
   ): Promise<AccessTokenResponse> {
     const data = querystring.stringify({
       grant_type: 'authorization_code',
@@ -275,6 +280,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
       redirect_uri: client.redirectUri,
       client_id: client.clientId,
       code_verifier: codeVerifier,
+      ...options.extraParams,
     })
 
     // tslint:disable-next-line:no-console

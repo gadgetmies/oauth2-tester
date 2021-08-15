@@ -3,6 +3,7 @@ import {
   SharedAuthorizationCodeGrantTesterOptions,
 } from './SharedAuthorizationCodeGrantTester'
 import {
+  AccessTokenRequestOptions,
   AccessTokenResponse,
   AccountGeneratorFn,
   AuthorizationCodeDetails,
@@ -204,13 +205,17 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
 
   async fetchAccessToken(
     client: Client,
-    authorizationCodeDetails: AuthorizationCodeDetails
+    authorizationCodeDetails: AuthorizationCodeDetails,
+    options: AccessTokenRequestOptions = {
+      extraParams: {},
+    }
   ): Promise<AccessTokenResponse> {
     const data = querystring.stringify({
       grant_type: 'authorization_code',
       code: authorizationCodeDetails.authorizationCode,
       redirect_uri: client.redirectUri,
       client_id: client.clientId,
+      ...options.extraParams,
     })
 
     // tslint:disable-next-line:no-console

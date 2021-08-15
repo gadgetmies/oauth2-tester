@@ -1,5 +1,6 @@
 import {
   AccessTokenDetails,
+  AccessTokenRequestOptions,
   AccessTokenResponse,
   AccountGeneratorFn,
   AuthorizationCodeDetails,
@@ -520,7 +521,8 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
 
   abstract fetchAccessToken(
     client: Client,
-    authorizationCodeDetails: AuthorizationCodeDetails
+    authorizationCodeDetails: AuthorizationCodeDetails,
+    options?: AccessTokenRequestOptions
   ): Promise<AccessTokenResponse>
 
   async cleanup() {
