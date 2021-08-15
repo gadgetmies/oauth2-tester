@@ -332,7 +332,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           })
 
           it('fails if redirect_uri is not provided', async () => {
-            await expextToFailWithStatusAndDataIncluding(400, { error: '' }, () =>
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
               this.requestAuthorizationCode({ ...client, redirectUri: undefined }, user, {
                 scopes: availableScopes,
               })
@@ -340,7 +340,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           })
 
           it('fails if client_id is not provided', async () => {
-            await expextToFailWithStatusAndDataIncluding(400, { error: '' }, () =>
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
               this.requestAuthorizationCode({ ...client, clientId: undefined }, user, {
                 scopes: availableScopes,
               })

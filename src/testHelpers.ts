@@ -62,7 +62,7 @@ export class TestHelpers {
 
   withDataIncluding = (data: { [k: string]: string }) => async (res: AxiosResponse) => {
     const keys = Object.keys(data)
-    for (const key in keys) {
+    for (const key of keys) {
       if (data[key] !== res.data[key]) {
         this.fail(
           res.data,
