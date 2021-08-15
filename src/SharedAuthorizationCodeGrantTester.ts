@@ -25,12 +25,21 @@ import * as toughCookie from 'tough-cookie'
 import axiosCookiejarSupport from 'axios-cookiejar-support'
 import * as R from 'ramda'
 import debug from 'debug'
+import * as querystring from 'querystring'
 
 const debugLog = debug('oauth2-tester')
 
 axiosCookiejarSupport(axios)
 
 export type SharedAuthorizationCodeGrantTesterOptions = { useRefreshTokens: boolean }
+
+export type AccessTokenRequestParameters = {
+  grant_type: string
+  code: string
+  redirect_uri: string
+  client_id: string
+  [x: string]: any
+}
 
 const requestWithAccessToken = (accessToken: AccessTokenDetails) => (
   config: AxiosRequestConfig,
@@ -451,6 +460,22 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
               })
             )
           })
+
+          it('fails with missing client_id', async () => {
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
+              this.fetchAccessToken(client, authorizationCodeDetails, {
+                extraParams: { client_id: undefined },
+              })
+            )
+          })
+
+          it('fails with missing redirect_uri', async () => {
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
+              this.fetchAccessToken(client, authorizationCodeDetails, {
+                extraParams: { redirect_uri: undefined },
+              })
+            )
+          })
         })
       })
     })
@@ -577,6 +602,16 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     authorizationCodeDetails: AuthorizationCodeDetails,
     options?: AccessTokenRequestOptions
   ): Promise<AccessTokenResponse>
+
+  static generateQueryString(parameters: AccessTokenRequestParameters) {
+    Object.keys(parameters).forEach((k) => {
+      if (parameters[k] === undefined) {
+        delete parameters[k]
+      }
+    })
+
+    return querystring.stringify(parameters)
+  }
 
   async cleanup() {
     return

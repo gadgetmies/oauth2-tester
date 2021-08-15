@@ -210,7 +210,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
       extraParams: {},
     }
   ): Promise<AccessTokenResponse> {
-    const data = querystring.stringify({
+    const data = SharedAuthorizationCodeGrantTester.generateQueryString({
       grant_type: 'authorization_code',
       code: authorizationCodeDetails.authorizationCode,
       redirect_uri: client.redirectUri,
