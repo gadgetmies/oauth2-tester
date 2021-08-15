@@ -89,7 +89,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     this.options = options
   }
 
-  logout(user: UserAccount) {
+  private logout(user: UserAccount) {
     delete this.cookieJars[user.username]
   }
 
@@ -320,36 +320,99 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           await this.removeClient(clientName)
         })
 
-        before('Register user', async () => {
-          user = await this.accountGenerator()
-          await this.registerAccount(user)
-        })
-
-        after('Remove user', () => this.removeUser(user))
-
-        describe('when fetching authorization code', () => {
-          beforeEach(() => {
+        // The user cannot be reused because the service can persist the consent and thus redirect the user back to the
+        // requesting service after login.
+        const registerUserSetupAndTeardown = () => {
+          before('Register user', async () => {
+            user = await this.accountGenerator()
+            await this.registerAccount(user)
             this.cookieJars[user.username] = new toughCookie.CookieJar()
           })
 
-          it('fails if client_id is not provided', async () => {
-            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
-              this.requestAuthorizationCode({ ...client, clientId: undefined }, user, {
-                scopes: availableScopes,
-              })
-            )
+          after('Remove user', () => this.removeUser(user))
+        }
+
+        describe('when fetching authorization code', () => {
+          describe('with missing client_id', () => {
+            registerUserSetupAndTeardown()
+
+            it('fails', async () => {
+              await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
+                this.requestAuthorizationCode({ ...client, clientId: undefined }, user, {
+                  scopes: availableScopes,
+                })
+              )
+            })
           })
 
-          it('fails if scope is invalid', async () => {
-            await expectRedirectToIncludeQuery(redirectUri, { error: 'invalid_scope' }, () =>
-              this.requestAuthorizationCode(client, user, {
-                scopes: ['invalid-scope'],
-              })
-            )
+          describe('with missing response_type', () => {
+            registerUserSetupAndTeardown()
+
+            it('fails', async () => {
+              await expectRedirectToIncludeQuery(redirectUri, { error: 'invalid_request' }, () =>
+                this.requestAuthorizationCode(client, user, {
+                  scopes: availableScopes,
+                  extraParams: {
+                    response_type: undefined,
+                  },
+                })
+              )
+            })
+          })
+
+          describe('when using invalid scope', () => {
+            registerUserSetupAndTeardown()
+
+            it('fails', async () => {
+              await expectRedirectToIncludeQuery(redirectUri, { error: 'invalid_scope' }, () =>
+                this.requestAuthorizationCode(client, user, {
+                  scopes: ['invalid-scope'],
+                })
+              )
+            })
+          })
+
+          describe('when redirect uri has incorrect port', () => {
+            registerUserSetupAndTeardown()
+
+            it('fails', () => {
+              return expectToFailWithStatus(400, () =>
+                this.requestAuthorizationCode({ ...client, redirectUri: `${redirectUri}:5000` }, user, {
+                  scopes: this.oauthProperties.availableScopes(),
+                })
+              )
+            })
+          })
+
+          describe('when redirect uri does not match', () => {
+            registerUserSetupAndTeardown()
+
+            it('fails if redirect uri does not match', () => {
+              return expectToFailWithStatus(400, () =>
+                this.requestAuthorizationCode({ ...client, redirectUri: 'http://some-incorrect-uri.com' }, user, {
+                  scopes: this.oauthProperties.availableScopes(),
+                })
+              )
+            })
+          })
+
+          describe('when user does not consent', () => {
+            registerUserSetupAndTeardown()
+
+            it('fails', async () => {
+              await expectRedirectToIncludeQuery(redirectUri, { error: 'access_denied' }, () =>
+                this.requestAuthorizationCode(client, user, {
+                  shouldConsent: false,
+                  scopes: this.oauthProperties.availableScopes(),
+                })
+              )
+            })
           })
         })
 
         describe('when user credentials are invalid', () => {
+          registerUserSetupAndTeardown()
+
           it('should fail', async () => {
             try {
               await this.requestAuthorizationCode(
@@ -365,56 +428,26 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
             } catch (e) {}
           })
         })
-      })
 
-      describe('when fetching authorization code', () => {
-        let user
-        const clientName = uuid.v4()
-        let client
+        describe('when requesting access token', () => {
+          let authorizationCodeDetails
 
-        before('Generate OAuth client', async () => {
-          client = await this.clientGenerator(clientName, redirectUri, this.oauthProperties.availableScopes())
-        })
+          registerUserSetupAndTeardown()
 
-        const registerUserSetupAndTeardown = () => {
-          before('Register user', async () => {
-            user = await this.accountGenerator()
-            await this.registerAccount(user)
-            this.cookieJars[user.username] = new toughCookie.CookieJar()
+          before('Fetch authorization code', async () => {
+            authorizationCodeDetails = await this.fetchAuthorizationCode(client, user, {
+              scopes: availableScopes,
+            })
+
+            if (!authorizationCodeDetails.authorizationCode) {
+              fail('Authorization code was not returned or was empty')
+            }
           })
 
-          after('Remove user', () => this.removeUser(user))
-        }
-
-        describe('when redirect URI port is incorrect', () => {
-          registerUserSetupAndTeardown()
-          it('should fail', () => {
-            return expectToFailWithStatus(400, () =>
-              this.requestAuthorizationCode({ ...client, redirectUri: `${redirectUri}:5000` }, user, {
-                scopes: this.oauthProperties.availableScopes(),
-              })
-            )
-          })
-        })
-
-        describe('when redirect URI is incorrect', () => {
-          registerUserSetupAndTeardown()
-          it('should fail', () => {
-            return expectToFailWithStatus(400, () =>
-              this.requestAuthorizationCode({ ...client, redirectUri: 'http://some-incorrect-uri.com' }, user, {
-                scopes: this.oauthProperties.availableScopes(),
-              })
-            )
-          })
-        })
-
-        describe('when user does not consent', () => {
-          registerUserSetupAndTeardown()
-          it('should fail', async () => {
-            await expectRedirectToIncludeQuery(redirectUri, { error: 'access_denied' }, () =>
-              this.requestAuthorizationCode(client, user, {
-                shouldConsent: false,
-                scopes: this.oauthProperties.availableScopes(),
+          it('fails with invalid grant_type', async () => {
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'unsupported_grant_type' }, () =>
+              this.fetchAccessToken(client, authorizationCodeDetails, {
+                extraParams: { grant_type: 'invalid_grant_type' },
               })
             )
           })
