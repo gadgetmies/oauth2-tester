@@ -309,9 +309,10 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
         const clientName = uuid.v4()
         let user: UserAccount
         let client: Client
+        const availableScopes = this.oauthProperties.availableScopes()
 
         before('Generate OAuth client', async () => {
-          client = await this.clientGenerator(clientName, redirectUri, this.oauthProperties.availableScopes())
+          client = await this.clientGenerator(clientName, redirectUri, availableScopes)
         })
 
         after('Remove OAuth client', async () => {
@@ -321,12 +322,31 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
         before('Register user', async () => {
           user = await this.accountGenerator()
           await this.registerAccount(user)
-          this.cookieJars[user.username] = new toughCookie.CookieJar()
         })
 
         after('Remove user', () => this.removeUser(user))
 
         describe('when fetching authorization code', () => {
+          beforeEach(() => {
+            this.cookieJars[user.username] = new toughCookie.CookieJar()
+          })
+
+          it('fails if redirect_uri is not provided', async () => {
+            await expextToFailWithStatusAndDataIncluding(400, { error: '' }, () =>
+              this.requestAuthorizationCode({ ...client, redirectUri: undefined }, user, {
+                scopes: availableScopes
+              })
+            )
+          })
+
+          it('fails if client_id is not provided', async () => {
+            await expextToFailWithStatusAndDataIncluding(400, { error: '' }, () =>
+              this.requestAuthorizationCode({ ...client, clientId: undefined }, user, {
+                scopes: availableScopes
+              })
+            )
+          })
+
           it('fails if scope is invalid', async () => {
             await expectRedirectToIncludeQuery(redirectUri, { error: 'invalid_scope' }, () =>
               this.requestAuthorizationCode(client, user, {
@@ -345,7 +365,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
                   username: 'foo',
                   password: 'bar',
                 },
-                { scopes: this.oauthProperties.availableScopes() }
+                { scopes: availableScopes }
               )
               fail('Expected to fail with incorrect credentials')
               // tslint:disable-next-line:no-empty
