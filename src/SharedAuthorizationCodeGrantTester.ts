@@ -141,7 +141,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     })
 
     step('Fetch access token', async () => {
-      const accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails)
+      const accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails, { user })
       accessTokenDetails = accessTokenResponse.accessTokenDetails
     })
 
@@ -211,7 +211,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           })
 
           step('Fetch access token', async () => {
-            accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails)
+            accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails, { user })
 
             const accessTokenDetails = accessTokenResponse.accessTokenDetails
             if (!accessTokenDetails.accessToken) {
@@ -261,7 +261,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
               })
 
               step('Fetch access token', async () => {
-                accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails)
+                accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails, { user })
 
                 const accessTokenDetails = accessTokenResponse.accessTokenDetails
                 if (!accessTokenDetails.accessToken) {
@@ -299,7 +299,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
         })
 
         before('Fetch access token', async () => {
-          accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails)
+          accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails, { user })
         })
 
         after('Remove user', () => this.removeUser(user))
@@ -310,7 +310,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
 
         it('fails if authorization code is reused', () => {
           return expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_grant' }, () =>
-            this.fetchAccessToken(client, authorizationCodeDetails)
+            this.fetchAccessToken(client, authorizationCodeDetails, { user })
           )
         })
       })
@@ -456,6 +456,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           it('fails with invalid grant_type', async () => {
             await expextToFailWithStatusAndDataIncluding(400, { error: 'unsupported_grant_type' }, () =>
               this.fetchAccessToken(client, authorizationCodeDetails, {
+                user,
                 extraParams: { grant_type: 'invalid_grant_type' },
               })
             )
@@ -464,6 +465,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           it('fails with missing client_id', async () => {
             await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
               this.fetchAccessToken(client, authorizationCodeDetails, {
+                user,
                 extraParams: { client_id: undefined },
               })
             )
@@ -472,6 +474,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           it('fails with missing redirect_uri', async () => {
             await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
               this.fetchAccessToken(client, authorizationCodeDetails, {
+                user,
                 extraParams: { redirect_uri: undefined },
               })
             )
@@ -553,7 +556,6 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     const consentResponse = await this.consent(options.shouldConsent, consentPageResponse, user, jar, options.scopes)
     this.responseLog('Consent response:', consentResponse.data)
 
-    this.logout(user)
     return consentResponse
   }
 
@@ -600,7 +602,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
   abstract fetchAccessToken(
     client: Client,
     authorizationCodeDetails: AuthorizationCodeDetails,
-    options?: AccessTokenRequestOptions
+    options: AccessTokenRequestOptions
   ): Promise<AccessTokenResponse>
 
   static generateQueryString(parameters: AccessTokenRequestParameters) {

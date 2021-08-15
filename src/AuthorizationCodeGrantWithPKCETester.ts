@@ -171,7 +171,8 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
               this.fetchAccessTokenWithCodeVerifier(
                 { ...client, clientId: 'invalid-client-id' },
                 authorizationCodeDetails,
-                codeVerifier
+                codeVerifier,
+                { user }
               )
             ))
         })
@@ -184,7 +185,8 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
               this.fetchAccessTokenWithCodeVerifier(
                 { ...client, redirectUri: 'http://localhost:5001' },
                 authorizationCodeDetails,
-                codeVerifier
+                codeVerifier,
+                { user }
               )
             ))
         })
@@ -200,7 +202,8 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
                   redirectUri: 'http://some-incorrect-uri.com',
                 },
                 authorizationCodeDetails,
-                codeVerifier
+                codeVerifier,
+                { user }
               )
             ))
         })
@@ -211,7 +214,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
           registerSetupAndTearDown()
           it('should fail', async () => {
             await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_grant' }, () =>
-              this.fetchAccessTokenWithCodeVerifier(client, authorizationCodeDetails, 'invalid-code-verifier')
+              this.fetchAccessTokenWithCodeVerifier(client, authorizationCodeDetails, 'invalid-code-verifier', { user })
             )
           })
         })
@@ -260,7 +263,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
   async fetchAccessToken(
     client: Client,
     authorizationCodeDetails: AuthorizationCodeDetails,
-    options?: AccessTokenRequestOptions
+    options: AccessTokenRequestOptions
   ): Promise<AccessTokenResponse> {
     const codeVerifier = this.getCodeVerifier(authorizationCodeDetails.authorizationCode)
     return this.fetchAccessTokenWithCodeVerifier(client, authorizationCodeDetails, codeVerifier, options)
@@ -270,9 +273,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
     client: Client,
     authorizationCodeDetails: AuthorizationCodeDetails,
     codeVerifier: string,
-    options: AccessTokenRequestOptions = {
-      extraParams: {},
-    }
+    options: AccessTokenRequestOptions
   ): Promise<AccessTokenResponse> {
     const data = SharedAuthorizationCodeGrantTester.generateQueryString({
       grant_type: 'authorization_code',
@@ -285,8 +286,11 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
 
     this.debugLog('Requesting access token with data', data)
 
+    const jar = this.cookieJars[options.user.username]
+
     const res = await axios({
       data,
+      jar,
       method: 'POST',
       url: this.oauthProperties.tokenEndpoint(),
       maxRedirects: 0,

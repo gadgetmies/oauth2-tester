@@ -93,7 +93,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
 
             it('should fail', () =>
               expectToBeUnauthorized(expectedAuthenticateDetails, () =>
-                this.fetchAccessToken({ ...client, clientId: 'invalid-client-id' }, authorizationCodeDetails)
+                this.fetchAccessToken({ ...client, clientId: 'invalid-client-id' }, authorizationCodeDetails, { user })
               ))
           })
 
@@ -107,7 +107,8 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
                     ...client,
                     redirectUri: 'http://localhost:5001',
                   },
-                  authorizationCodeDetails
+                  authorizationCodeDetails,
+                  { user }
                 )
               ))
           })
@@ -122,7 +123,8 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
                     ...client,
                     redirectUri: 'http://some-incorrect-uri.com',
                   },
-                  authorizationCodeDetails
+                  authorizationCodeDetails,
+                  { user }
                 )
               ))
           })
@@ -133,7 +135,11 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
 
           it('fails with incorrect code', async () =>
             await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_grant' }, () =>
-              this.fetchAccessToken(client, { ...authorizationCodeDetails, authorizationCode: 'invalid-code' })
+              this.fetchAccessToken(
+                client,
+                { ...authorizationCodeDetails, authorizationCode: 'invalid-code' },
+                { user }
+              )
             ))
         })
       })
@@ -149,7 +155,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
 
         const registerAccessTokenFetch = () => {
           before('Fetch access and refresh token', async () => {
-            const res = await this.fetchAccessToken(client, authorizationCodeDetails)
+            const res = await this.fetchAccessToken(client, authorizationCodeDetails, { user })
             refreshTokenDetails = res.refreshTokenDetails
           })
         }
@@ -206,9 +212,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
   async fetchAccessToken(
     client: Client,
     authorizationCodeDetails: AuthorizationCodeDetails,
-    options: AccessTokenRequestOptions = {
-      extraParams: {},
-    }
+    options: AccessTokenRequestOptions
   ): Promise<AccessTokenResponse> {
     const data = SharedAuthorizationCodeGrantTester.generateQueryString({
       grant_type: 'authorization_code',

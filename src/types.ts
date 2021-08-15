@@ -106,6 +106,7 @@ export type AuthorizationCodeRequestOptions = {
 }
 
 export type AccessTokenRequestOptions = {
+  user: UserAccount,
   extraParams?: {
     [k: string]: string
   }
