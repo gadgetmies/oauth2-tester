@@ -1,5 +1,5 @@
 import { CookieJar } from 'tough-cookie'
-import { AxiosResponse } from 'axios'
+import { AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 export type Client = {
   clientId: string
@@ -90,6 +90,12 @@ export type TestFunctions = {
   after: TeardownFn
   fail: FailFn<any>
 }
+
+export type RequestWithAccessTokenFn = (config: AxiosRequestConfig, overrideAccessToken?: string) => AxiosPromise
+
+export type ResourceRequestTestFn = (
+  requestWithAccessToken: RequestWithAccessTokenFn
+) => void
 
 export type AuthorizationCodeRequestOptions = {
   shouldConsent?: boolean

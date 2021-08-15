@@ -1,4 +1,5 @@
 import {
+  AccessTokenDetails,
   AccessTokenResponse,
   AccountGeneratorFn,
   AuthorizationCodeDetails,
@@ -11,20 +12,45 @@ import {
   RegisterAccountFn,
   RemoveAccountFn,
   RemoveClientFn,
+  ResourceRequestTestFn,
   TestFunctions,
   UserAccount,
 } from './types'
 import OAuth2Tester from './OAuth2Tester'
 import { TestHelpers } from './testHelpers'
 import * as uuid from 'uuid'
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios'
 import * as toughCookie from 'tough-cookie'
 import axiosCookiejarSupport from 'axios-cookiejar-support'
 import * as R from 'ramda'
+import debug from "debug";
+
+const debugLog = debug('oauth2-tester')
 
 axiosCookiejarSupport(axios)
 
 export type SharedAuthorizationCodeGrantTesterOptions = { useRefreshTokens: boolean }
+
+const requestWithAccessToken = (accessToken: AccessTokenDetails) => (
+  config: AxiosRequestConfig,
+  overrideAccessToken?: string
+): AxiosPromise => {
+  if (config.validateStatus && overrideAccessToken) {
+    throw new Error(
+      'You should not define both the config.validateStatus and overrideAccessToken. ' +
+        'The server is expected to always return 401 for invalid access tokens.'
+    )
+  }
+
+  const c = {
+    ...config,
+    validateStatus: overrideAccessToken ? (status) => status === 401 : config.validateStatus,
+    headers: { ...config.headers, Authorization: `Bearer ${overrideAccessToken || accessToken.accessToken}` },
+  }
+
+  debugLog('Request with access token', c)
+  return axios(c)
+}
 
 export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
   // Needed for authorization code and resource owner password grants
@@ -69,6 +95,51 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
   async removeUser(user: UserAccount) {
     this.logout(user)
     await this.removeAccount(user.username)
+  }
+
+  registerResourceRequestTests(scopes: string[], testFunctions: TestFunctions, tests: ResourceRequestTestFn[]) {
+    const { step, before, after } = testFunctions
+    const redirectUri: string = 'https://an-awesome-service.com/'
+    const clientName: string = uuid.v4()
+    let client: Client
+    let user: UserAccount
+    let authorizationCodeDetails: AuthorizationCodeDetails
+    let accessTokenDetails: AccessTokenDetails
+
+    before('Generate OAuth client', async () => {
+      client = await this.clientGenerator(clientName, redirectUri, scopes)
+    })
+
+    before('Generate user details', async () => {
+      user = await this.accountGenerator()
+    })
+
+    before('Register user', async () => {
+      await this.registerAccount(user)
+      this.cookieJars[user.username] = new toughCookie.CookieJar()
+    })
+
+    after('Remove OAuth client', async () => {
+      await this.removeAccount(user.username)
+      await this.removeClient(clientName)
+    })
+
+    step('Fetch authorization code for all scopes', async () => {
+      authorizationCodeDetails = await this.fetchAuthorizationCode(client, user, {
+        scopes,
+      })
+    })
+
+    step('Fetch access token', async () => {
+      const accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails)
+      accessTokenDetails = accessTokenResponse.accessTokenDetails
+    })
+
+    step('Resource requests', async () => {
+      for (const test of tests) {
+        await test(requestWithAccessToken(accessTokenDetails))
+      }
+    })
   }
 
   registerSharedTests(testFunctions: TestFunctions) {

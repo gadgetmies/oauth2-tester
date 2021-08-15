@@ -32,7 +32,22 @@ const runners = new AuthorizationCodeGrantTester(
   }
 )
 
-runners.register({ describe, it, step, before, after, fail: assert.fail })
+const testFunctions = { describe, it, step, before, after, fail: assert.fail }
+runners.register(testFunctions)
+
+// Register tests for resources secured with OAuth
+runners.registerResourceRequestTests(['exam:write'], testFunctions, [
+  async requestWithAccessToken => {
+    it('should create resource when POSTing', async () => {
+      const res = await requestWithAccessToken({
+        data: {},
+        method: 'POST',
+        url: serverRoot + '/resource/a'
+      })
+      ...
+    })
+  }
+])
 ```
 
 ## Debugging
