@@ -30,6 +30,7 @@
   "dependencies": {
     "aggregate-error": "^3.1.0",
     "axios": "^0.21.0",
+    "axios-debug-log": "^0.8.4",
     "axios-cookiejar-support": "^1.0.1",
     "base64url": "^3.0.1",
     "debug": "^4.3.2",

@@ -1,4 +1,5 @@
 import { ClientGeneratorFn, OAuthProperties, RemoveClientFn, TestFunctions } from './types'
+import 'axios-debug-log'
 import debug from "debug";
 
 export default abstract class OAuth2Tester {

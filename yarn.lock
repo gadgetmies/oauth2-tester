@@ -764,6 +764,14 @@ axios-cookiejar-support@^1.0.1:
     is-redirect "^1.0.0"
     pify "^5.0.0"
 
+axios-debug-log@^0.8.4:
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/axios-debug-log/-/axios-debug-log-0.8.4.tgz#2f311d70bbe36725562b1bb9c86e202ac3cd26fe"
+  integrity sha512-DvmaJiYusndhfAjQ94HqlvhaVoEjOetwo9cpb+OVtOZNZTqdz0VAVed3ZjSQKpyM1g8jDXUXFx0Pg1DhUZzAdw==
+  dependencies:
+    "@types/debug" "^4.0.0"
+    debug "^4.0.0"
+
 axios@^0.21.0:
   version "0.21.0"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.0.tgz#26df088803a2350dff2c27f96fef99fe49442aca"

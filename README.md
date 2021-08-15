@@ -38,3 +38,7 @@ runners.register({ describe, it, step, before, after, fail: assert.fail })
 ## Debugging
 
 The library uses the [debug](https://www.npmjs.com/package/debug) library for debug logging. To enable logging of authorization and access token request details, include `oauth2-tester` in the `DEBUG` environment variable.
+
+The library uses [axios](https://www.npmjs.com/package/axios) to make HTTP requests and [axios-debug-log](https://www.npmjs.com/package/axios-debug-log) to enable debugging of the requests. To enable logging of HTTP requests include `axios` in the `DEBUG` environment variable.
+
+To enable debug logging of multiple libraries include the names in the `DEBUG` separated with spaces or commas e.g. `DEBUG=axios,oauth2-tester`. For further details refer to the [debug library README](https://github.com/visionmedia/debug#readme).
