@@ -423,6 +423,19 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     })
   }
 
+  private static getRedirectQueryError(response: AxiosResponse) {
+    const location = response.headers.location
+    if (!location) {
+      return null
+    }
+    const query = location.substring(location.indexOf('?'))
+    if (!query) {
+      return null
+    }
+
+    return new URLSearchParams(query).get('error')
+  }
+
   async requestAuthorizationCode(
     client: Client,
     user: UserAccount,
@@ -460,14 +473,21 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
       throw e
     }
 
+    if (SharedAuthorizationCodeGrantTester.getRedirectQueryError(authorizationResponse)) {
+      return authorizationResponse
+    }
+
     const loginResponse = await this.login(authorizationResponse, user, jar)
     this.responseLog('Login response:', loginResponse.data)
+
+    if (SharedAuthorizationCodeGrantTester.getRedirectQueryError(loginResponse)) {
+      return loginResponse
+    }
+
     const loginRedirectResponse = await this.followRedirect(loginResponse, jar)
     this.responseLog('Login redirect response:', loginRedirectResponse.data)
 
-    const location = loginRedirectResponse.headers.location
-    const returnedRedirectQuery = location.substring(location.indexOf('?'))
-    if (new URLSearchParams(returnedRedirectQuery).get('error')) {
+    if (SharedAuthorizationCodeGrantTester.getRedirectQueryError(loginRedirectResponse)) {
       return loginRedirectResponse
     }
 
