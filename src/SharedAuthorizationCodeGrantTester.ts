@@ -62,6 +62,15 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     this.options = options
   }
 
+  logout(user: UserAccount) {
+    delete this.cookieJars[user.username]
+  }
+
+  async removeUser(user: UserAccount) {
+    this.logout(user)
+    await this.removeAccount(user.username)
+  }
+
   registerSharedTests(testFunctions: TestFunctions) {
     const { describe, it, step, before, after, fail } = testFunctions
     const { expextToFailWithStatusAndDataIncluding, expectRedirectToIncludeQuery, expectToFailWithStatus } = new TestHelpers(
@@ -104,9 +113,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
             this.cookieJars[user.username] = new toughCookie.CookieJar()
           })
 
-          after('Remove user', async () => {
-            await this.removeAccount(user.username)
-          })
+          after('Remove user', () => this.removeUser(user))
 
           step('Fetch authorization code for all scopes', async () => {
             authorizationCodeDetails = await this.fetchAuthorizationCode(client, user, {
@@ -156,9 +163,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
                 this.cookieJars[user.username] = new toughCookie.CookieJar()
               })
 
-              after('Remove user', async () => {
-                await this.removeAccount(user.username)
-              })
+              after('Remove user', () => this.removeUser(user))
 
               step(`Fetch authorization code`, async () => {
                 authorizationCodeDetails = await this.fetchAuthorizationCode(client, user, {
@@ -214,9 +219,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           accessTokenResponse = await this.fetchAccessToken(client, authorizationCodeDetails)
         })
 
-        after('Remove user', async () => {
-          await this.removeAccount(user.username)
-        })
+        after('Remove user', () => this.removeUser(user))
 
         after('Remove OAuth client', async () => {
           await this.removeClient(clientName)
@@ -248,9 +251,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
           this.cookieJars[user.username] = new toughCookie.CookieJar()
         })
 
-        after('Remove user', async () => {
-          await this.removeAccount(user.username)
-        })
+        after('Remove user', () => this.removeUser(user))
 
         describe('when fetching authorization code', () => {
           it('fails if scope is invalid', async () => {
@@ -296,10 +297,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
             this.cookieJars[user.username] = new toughCookie.CookieJar()
           })
 
-          after('Remove user', async () => {
-            await this.removeAccount(user.username)
-            delete this.cookieJars[user.username]
-          })
+          after('Remove user', () => this.removeUser(user))
         }
 
         describe('when redirect URI port is incorrect', () => {
