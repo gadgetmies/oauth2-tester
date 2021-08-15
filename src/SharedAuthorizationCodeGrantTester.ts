@@ -129,8 +129,11 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
       this.cookieJars[user.username] = new toughCookie.CookieJar()
     })
 
+    after('Remove user', async () => {
+      await this.removeUser(user)
+    })
+
     after('Remove OAuth client', async () => {
-      await this.removeAccount(user.username)
       await this.removeClient(clientName)
     })
 
