@@ -144,9 +144,11 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
 
   registerSharedTests(testFunctions: TestFunctions) {
     const { describe, it, step, before, after, fail } = testFunctions
-    const { expextToFailWithStatusAndDataIncluding, expectRedirectToIncludeQuery, expectToFailWithStatus } = new TestHelpers(
-      fail
-    )
+    const {
+      expextToFailWithStatusAndDataIncluding,
+      expectRedirectToIncludeQuery,
+      expectToFailWithStatus,
+    } = new TestHelpers(fail)
 
     const redirectUri = 'https://an-awesome-service.com/' // TODO: specify in suites
 
