@@ -360,7 +360,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     // tslint:disable-next-line:no-console
     this.debugLog(`Requesting authorization code with params:\n ${JSON.stringify(params, null, 2)}`)
 
-    const res = await axios({
+    const authorizationResponse = await axios({
       jar,
       params,
       url: this.oauthProperties.authorizationEndpoint(),
@@ -368,8 +368,10 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
       withCredentials: true,
     })
 
-    const loginResponse = await this.login(res, user, jar)
+    const loginResponse = await this.login(authorizationResponse, user, jar)
+    this.responseLog('Login response:', loginResponse.data)
     const loginRedirectResponse = await this.followRedirect(loginResponse, jar)
+    this.responseLog('Login redirect response:', loginRedirectResponse.data)
 
     const location = loginRedirectResponse.headers.location
     const returnedRedirectQuery = location.substring(location.indexOf('?'))
@@ -378,8 +380,10 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     }
 
     const consentPageResponse = await this.followRedirect(loginRedirectResponse, jar)
+    const consentResponse = await this.consent(options.shouldConsent, consentPageResponse, user, jar, options.scopes)
+    this.responseLog('Consent response:', consentResponse.data)
 
-    return await this.consent(options.shouldConsent, consentPageResponse, user, jar, options.scopes)
+    return consentResponse
   }
 
   async followRedirect(res: AxiosResponse, jar: toughCookie.CookieJar): Promise<AxiosResponse> {

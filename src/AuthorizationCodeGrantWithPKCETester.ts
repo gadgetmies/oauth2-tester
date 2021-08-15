@@ -286,6 +286,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
       url: this.oauthProperties.tokenEndpoint(),
       maxRedirects: 0,
     })
+    this.responseLog('Access token response:', res.data)
 
     if (res.status === 302) {
       throw new Error('Server redirected an access token request!')

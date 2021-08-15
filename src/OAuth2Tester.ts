@@ -22,4 +22,5 @@ export default abstract class OAuth2Tester {
   abstract register(testFunctions: TestFunctions): void
 
   protected debugLog = debug('oauth2-tester')
+  protected responseLog = debug('oauth2-tester:response')
 }

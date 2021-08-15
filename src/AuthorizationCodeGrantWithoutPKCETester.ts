@@ -226,6 +226,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
         password: client.clientSecret,
       },
     })
+    this.responseLog('Access token response:', res.data)
 
     if (res.status === 302) {
       throw new Error('Access token responded with a redirect!')
