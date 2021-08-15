@@ -358,7 +358,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     }
 
     // tslint:disable-next-line:no-console
-    console.log(`Requesting authorization code with params:\n ${JSON.stringify(params, null, 2)}`)
+    this.debugLog(`Requesting authorization code with params:\n ${JSON.stringify(params, null, 2)}`)
 
     const res = await axios({
       jar,

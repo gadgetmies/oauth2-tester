@@ -278,7 +278,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
     })
 
     // tslint:disable-next-line:no-console
-    console.log(`Requesting access token with data: ${data}`)
+    this.debugLog('Requesting access token with data', data)
 
     const res = await axios({
       data,

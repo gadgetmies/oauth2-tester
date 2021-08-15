@@ -1,4 +1,5 @@
 import { ClientGeneratorFn, OAuthProperties, RemoveClientFn, TestFunctions } from './types'
+import debug from "debug";
 
 export default abstract class OAuth2Tester {
   protected oauthProperties: OAuthProperties
@@ -18,4 +19,6 @@ export default abstract class OAuth2Tester {
   }
 
   abstract register(testFunctions: TestFunctions): void
+
+  protected debugLog = debug('oauth2-tester')
 }

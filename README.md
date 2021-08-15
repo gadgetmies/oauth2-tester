@@ -34,3 +34,7 @@ const runners = new AuthorizationCodeGrantTester(
 
 runners.register({ describe, it, step, before, after, fail: assert.fail })
 ```
+
+## Debugging
+
+The library uses the [debug](https://www.npmjs.com/package/debug) library for debug logging. To enable logging of authorization and access token request details, include `oauth2-tester` in the `DEBUG` environment variable.
