@@ -451,13 +451,21 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
     // tslint:disable-next-line:no-console
     this.debugLog(`Requesting authorization code with params:\n ${JSON.stringify(params, null, 2)}`)
 
-    const authorizationResponse = await axios({
-      jar,
-      params,
-      url: this.oauthProperties.authorizationEndpoint(),
-      method: 'GET',
-      withCredentials: true,
-    })
+    let authorizationResponse
+    try {
+      authorizationResponse = await axios({
+        jar,
+        params,
+        url: this.oauthProperties.authorizationEndpoint(),
+        method: 'GET',
+        withCredentials: true,
+      })
+    } catch (e) {
+      if (e.response) {
+        this.responseLog('Authorization request failed with:', e.response.data)
+      }
+      throw e
+    }
 
     const loginResponse = await this.login(authorizationResponse, user, jar)
     this.responseLog('Login response:', loginResponse.data)
