@@ -283,7 +283,6 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
       ...options.extraParams,
     })
 
-    // tslint:disable-next-line:no-console
     this.debugLog('Requesting access token with data', data)
 
     const res = await axios({
