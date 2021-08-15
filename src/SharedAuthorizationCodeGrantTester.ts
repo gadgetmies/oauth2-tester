@@ -331,14 +331,6 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
             this.cookieJars[user.username] = new toughCookie.CookieJar()
           })
 
-          it('fails if redirect_uri is not provided', async () => {
-            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
-              this.requestAuthorizationCode({ ...client, redirectUri: undefined }, user, {
-                scopes: availableScopes,
-              })
-            )
-          })
-
           it('fails if client_id is not provided', async () => {
             await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
               this.requestAuthorizationCode({ ...client, clientId: undefined }, user, {
