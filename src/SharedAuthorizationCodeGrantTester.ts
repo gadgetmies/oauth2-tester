@@ -37,7 +37,7 @@ export type AccessTokenRequestParameters = {
   grant_type: string
   code: string
   redirect_uri: string
-  client_id: string
+  client_id?: string
   [x: string]: any
 }
 

@@ -218,7 +218,6 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
       grant_type: 'authorization_code',
       code: authorizationCodeDetails.authorizationCode,
       redirect_uri: client.redirectUri,
-      client_id: client.clientId,
       ...options.extraParams,
     })
 
