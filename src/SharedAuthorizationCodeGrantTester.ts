@@ -465,15 +465,6 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
             )
           })
 
-          it('fails with missing client_id', async () => {
-            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
-              this.fetchAccessToken(client, authorizationCodeDetails, {
-                user,
-                extraParams: { client_id: undefined },
-              })
-            )
-          })
-
           it('fails with missing redirect_uri', async () => {
             await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
               this.fetchAccessToken(client, authorizationCodeDetails, {

@@ -22,12 +22,12 @@ import {
   SharedAuthorizationCodeGrantTester,
   SharedAuthorizationCodeGrantTesterOptions,
 } from './SharedAuthorizationCodeGrantTester'
-import * as querystring from 'querystring'
 import { TestHelpers } from './testHelpers'
 
 import axios, { AxiosResponse } from 'axios'
 import * as toughCookie from 'tough-cookie'
 import axiosCookiejarSupport from 'axios-cookiejar-support'
+
 axiosCookiejarSupport(axios)
 
 export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCodeGrantTester {
@@ -160,6 +160,29 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
 
       before('Generate OAuth client', async () => {
         client = await this.clientGenerator(clientName, redirectUri, this.oauthProperties.availableScopes())
+      })
+
+      describe('with missing client details', () => {
+        describe('with missing client_id', () => {
+          registerSetupAndTearDown()
+          it('access token request should fail', async () => {
+            await expextToFailWithStatusAndDataIncluding(400, { error: 'invalid_request' }, () =>
+              this.fetchAccessToken(client, authorizationCodeDetails, {
+                user,
+                extraParams: { client_id: undefined },
+              })
+            )
+          })
+        })
+
+        describe('with incorrect client id', () => {
+          registerSetupAndTearDown()
+
+          it('access token request should fail', () =>
+            expextToFailWithStatusAndDataIncluding(401, { error: 'invalid_client' }, () =>
+              this.fetchAccessToken({ ...client, clientId: 'invalid-client-id' }, authorizationCodeDetails, { user })
+            ))
+        })
       })
 
       describe('with incorrect client details', () => {
