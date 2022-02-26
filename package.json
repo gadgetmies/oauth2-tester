@@ -1,6 +1,6 @@
 {
   "name": "oauth2-tester",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "OAuth2 tester",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
