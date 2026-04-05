@@ -1,3 +1,4 @@
+import base64url from 'base64url'
 import {
   SharedAuthorizationCodeGrantTester,
   SharedAuthorizationCodeGrantTesterOptions,
@@ -245,6 +246,10 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
 
     const scopes = res.data.scope !== undefined ? res.data.scope.split(' ') : undefined
 
+    const idTokenDetails = res.data.id_token
+      ? JSON.parse(base64url.decode(res.data.id_token.split('.')[1]))
+      : undefined
+
     return {
       accessTokenDetails: {
         scopes,
@@ -256,6 +261,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
         scopes,
         refreshToken: res.data.refresh_token,
       },
+      idTokenDetails,
     }
   }
 
@@ -281,6 +287,10 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
 
     const scopes = res.data.scope !== undefined ? res.data.scope.split(' ') : undefined
 
+    const idTokenDetails = res.data.id_token
+      ? JSON.parse(base64url.decode(res.data.id_token.split('.')[1]))
+      : undefined
+
     return {
       accessTokenDetails: {
         scopes,
@@ -292,6 +302,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
         scopes,
         refreshToken: res.data.refresh_token,
       },
+      idTokenDetails,
     }
   }
 }
