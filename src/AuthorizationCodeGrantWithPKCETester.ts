@@ -330,6 +330,10 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
 
     const scopes = res.data.scope !== undefined ? res.data.scope.split(' ') : undefined
 
+    const idTokenDetails = res.data.id_token
+      ? JSON.parse(base64url.decode(res.data.id_token.split('.')[1]))
+      : undefined
+
     return {
       accessTokenDetails: {
         scopes,
@@ -337,6 +341,7 @@ export class AuthorizationCodeGrantWithPKCETester extends SharedAuthorizationCod
         expiresIn: res.data.expires_in,
         tokenType: res.data.token_type,
       },
+      idTokenDetails,
     }
   }
 

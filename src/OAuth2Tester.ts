@@ -3,9 +3,9 @@ import 'axios-debug-log'
 import debug from "debug";
 
 export default abstract class OAuth2Tester {
-  protected oauthProperties: OAuthProperties
-  protected clientGenerator: ClientGeneratorFn
-  protected removeClient: RemoveClientFn
+  public oauthProperties: OAuthProperties
+  public clientGenerator: ClientGeneratorFn
+  public removeClient: RemoveClientFn
 
   protected constructor(
     oauthProperties: OAuthProperties,

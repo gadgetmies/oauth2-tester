@@ -54,6 +54,12 @@ export type OAuthProperties = {
   availableScopes: () => string[]
 }
 
+export type OIDCProperties = OAuthProperties & {
+  issuer: () => string
+  discoveryEndpoint?: () => string
+  userinfoEndpoint?: () => string
+}
+
 export type AuthorizationCodeDetails = {
   authorizationCode: string
   scopes: string[]
@@ -71,9 +77,24 @@ export type RefreshTokenDetails = {
   scopes?: string[]
 }
 
+export type IDTokenDetails = {
+  iss: string
+  sub: string
+  aud: string[] | string
+  exp: number
+  iat: number
+  auth_time?: number
+  nonce?: string
+  acr?: string
+  amr?: string[]
+  azp?: string
+  [key: string]: any
+}
+
 export type AccessTokenResponse = {
   accessTokenDetails: AccessTokenDetails
   refreshTokenDetails?: RefreshTokenDetails
+  idTokenDetails?: IDTokenDetails
 }
 
 export type CaseFn = (description: string, callback: (...args: any[]) => Promise<void>) => void

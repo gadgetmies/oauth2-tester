@@ -64,14 +64,14 @@ const requestWithAccessToken = (accessToken: AccessTokenDetails) => (
 
 export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
   // Needed for authorization code and resource owner password grants
-  protected registerAccount: RegisterAccountFn
-  protected accountGenerator: AccountGeneratorFn
+  public registerAccount: RegisterAccountFn
+  public accountGenerator: AccountGeneratorFn
 
   // Needed for authorization code grant
   protected login: LoginFn
   protected consent: ConsentFn
   protected removeAccount: RemoveAccountFn
-  protected cookieJars: { [x: string]: toughCookie.CookieJar } = {}
+  public cookieJars: { [x: string]: toughCookie.CookieJar } = {}
   private options: SharedAuthorizationCodeGrantTesterOptions
 
   protected constructor(
