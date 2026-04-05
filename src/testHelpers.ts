@@ -1,6 +1,6 @@
 import { AxiosError, AxiosResponse } from 'axios'
 import { FailFn } from './types'
-import aggregateError = require('aggregate-error')
+import aggregateError from 'aggregate-error'
 
 export class TestHelpers {
   private readonly fail: FailFn<any>

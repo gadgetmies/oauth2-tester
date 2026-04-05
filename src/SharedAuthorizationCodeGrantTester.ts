@@ -506,6 +506,7 @@ export abstract class SharedAuthorizationCodeGrantTester extends OAuth2Tester {
       redirect_uri: client.redirectUri,
       scope: options.scopes ? options.scopes.join(' ') : undefined,
       response_type: 'code',
+      nonce: options.nonce,
       ...options.extraParams,
     }
 

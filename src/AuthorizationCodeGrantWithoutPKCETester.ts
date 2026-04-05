@@ -249,6 +249,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
       accessTokenDetails: {
         scopes,
         accessToken: res.data.access_token,
+        idToken: res.data.id_token,
         expiresIn: res.data.expires_in,
         tokenType: res.data.token_type,
       },
@@ -285,6 +286,7 @@ export class AuthorizationCodeGrantWithoutPKCETester extends SharedAuthorization
       accessTokenDetails: {
         scopes,
         accessToken: res.data.access_token,
+        idToken: res.data.id_token,
         expiresIn: res.data.expires_in,
         tokenType: res.data.token_type,
       },
