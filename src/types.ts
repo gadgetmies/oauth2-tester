@@ -54,6 +54,11 @@ export type OAuthProperties = {
   availableScopes: () => string[]
 }
 
+export type OIDCProperties = OAuthProperties & {
+  userInfoEndpoint: () => string
+  issuer: () => string
+}
+
 export type AuthorizationCodeDetails = {
   authorizationCode: string
   scopes: string[]
@@ -61,6 +66,7 @@ export type AuthorizationCodeDetails = {
 
 export type AccessTokenDetails = {
   accessToken: string
+  idToken?: string
   scopes?: string[]
   expiresIn?: number
   tokenType: string
@@ -100,6 +106,7 @@ export type ResourceRequestTestFn = (
 export type AuthorizationCodeRequestOptions = {
   shouldConsent?: boolean
   scopes?: string[]
+  nonce?: string
   extraParams?: {
     [k: string]: string
   }

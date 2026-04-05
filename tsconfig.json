@@ -2,9 +2,13 @@
   "compileOnSave": true,
   "compilerOptions": {
     "lib": [
-      "es2015",
+      "es2017",
       "dom"
     ],
+    "target": "es2017",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
     "outDir": "dist",
     "declaration": true,
     "declarationDir": "dist",

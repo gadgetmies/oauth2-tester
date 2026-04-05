@@ -33,10 +33,11 @@
   "dependencies": {
     "aggregate-error": "^3.1.0",
     "axios": "^0.21.0",
-    "axios-debug-log": "^0.8.4",
     "axios-cookiejar-support": "^1.0.1",
+    "axios-debug-log": "^0.8.4",
     "base64url": "^3.0.1",
     "debug": "^4.3.2",
+    "jose": "^6.2.2",
     "ramda": "^0.27.1",
     "tough-cookie": "^4.0.0",
     "uuid": "^8.3.2"
